@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Xcode user-specific (per-person, not shared)
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Xcode build output & derived data (large, regeneratable)
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# CocoaPods (deps – each person runs pod install)
+Pods/
+
+# Swift Package Manager build artifacts
+.swiftpm/
+.build/
+
+# Other
+*.log
+*.tmp
