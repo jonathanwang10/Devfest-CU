@@ -83,15 +83,11 @@ struct MetaCameraView: View {
                         .padding(.horizontal, 28)
                         .padding(.top, 12)
 
-                    quickActionsSection
+                    startSection
                         .padding(.horizontal, 28)
-                        .padding(.top, 36)
+                        .padding(.top, 44)
 
                     Spacer(minLength: 60)
-
-                    connectionSection
-                        .padding(.horizontal, 28)
-                        .padding(.bottom, 50)
                 }
                 .frame(minHeight: UIScreen.main.bounds.height - 100)
             }
@@ -157,82 +153,12 @@ struct MetaCameraView: View {
         }
     }
 
-    // MARK: Quick Actions
+    // MARK: Start Section
 
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("[ Quick actions ]")
-                .font(.subheadline)
-                .foregroundColor(MedkitTheme.textSecondary)
-                .padding(.bottom, 2)
-
-            quickActionCard(
-                icon: "cross.fill",
-                title: "Emergency care",
-                subtitle: "Immediate organization of the necessary help",
-                action: { startSession(emergency: true) }
-            )
-
-            quickActionCard(
-                icon: "stethoscope",
-                title: "Symptom identification",
-                subtitle: "Gathering information, planning further actions",
-                action: { startSession(emergency: false) }
-            )
-
-            quickActionCard(
-                icon: "list.bullet.clipboard",
-                title: "Providing instructions",
-                subtitle: "Help with preparing for specific procedures",
-                action: { startSession(emergency: false) }
-            )
-        }
-    }
-
-    private func quickActionCard(
-        icon: String, title: String, subtitle: String, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(MedkitTheme.accentVeryLight)
-                        .frame(width: 48, height: 48)
-                    Image(systemName: icon)
-                        .font(.title3)
-                        .foregroundColor(MedkitTheme.accent)
-                }
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(MedkitTheme.textPrimary)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(MedkitTheme.textSecondary)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(MedkitTheme.textSecondary.opacity(0.4))
-            }
-            .padding(14)
-            .background(MedkitTheme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
-        }
-        .disabled(!isReadyToStream)
-        .opacity(isReadyToStream ? 1.0 : 0.5)
-    }
-
-    // MARK: Connection Section
-
-    private var connectionSection: some View {
-        VStack(spacing: 14) {
+    private var startSection: some View {
+        VStack(spacing: 20) {
             if viewModel.registrationState != .registered {
+                // Connect glasses button
                 Button(action: { viewModel.connectGlasses() }) {
                     HStack(spacing: 10) {
                         Image(systemName: "eyeglasses")
@@ -241,9 +167,10 @@ struct MetaCameraView: View {
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 18)
                     .background(MedkitTheme.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: MedkitTheme.accent.opacity(0.3), radius: 12, y: 4)
                 }
                 .disabled(viewModel.registrationState == .registering)
                 .opacity(viewModel.registrationState == .registering ? 0.6 : 1.0)
@@ -256,25 +183,37 @@ struct MetaCameraView: View {
                             .foregroundColor(MedkitTheme.textSecondary)
                     }
                 }
-            } else if !streamVM.hasActiveDevice {
-                HStack(spacing: 8) {
-                    ProgressView().scaleEffect(0.8)
-                    Text("Waiting for glasses...")
-                        .font(.subheadline)
-                        .foregroundColor(MedkitTheme.textSecondary)
-                }
             } else {
+                // Start session button
+                Button(action: { startSession(emergency: false) }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "waveform.circle.fill")
+                            .font(.title2)
+                        Text("Start Session")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(isReadyToStream ? MedkitTheme.accent : MedkitTheme.textSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: MedkitTheme.accent.opacity(isReadyToStream ? 0.3 : 0), radius: 12, y: 4)
+                }
+                .disabled(!isReadyToStream)
+
+                // Status indicator
                 HStack(spacing: 8) {
-                    Image(systemName: "mic.fill")
-                        .foregroundColor(MedkitTheme.accent)
-                        .font(.caption)
-                    Text("Tap an action or say \"Medkit\" to start")
+                    Circle()
+                        .fill(streamVM.hasActiveDevice ? .green : .orange)
+                        .frame(width: 7, height: 7)
+                    Text(streamVM.hasActiveDevice
+                         ? "Glasses connected — tap to start"
+                         : "Waiting for glasses...")
                         .font(.subheadline)
                         .foregroundColor(MedkitTheme.textSecondary)
                 }
             }
         }
-        .frame(maxWidth: .infinity)
     }
 
     // =========================================================================
